@@ -1,0 +1,238 @@
+---
+title: "Prediction"
+author: "Ye Bi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/Github")
+```
+
+## Loading packages 
+```{r}
+library(readxl)
+library(tidyverse)
+library(reshape2)
+library(MLmetrics)
+library(caret)
+library(RColorBrewer)
+```
+
+## Load all self-made functions.
+```{r}
+source("./Rcodes/Functions.R")
+```
+
+```{r}
+train_control = trainControl(method="cv", number = 5, savePredictions = TRUE, classProbs = F)
+train_control0 = trainControl(method="none", savePredictions = TRUE, classProbs = F)
+```
+
+
+## CV0: goodness of fit
+
+### Build function for cv0
+
+```{r}
+cv0_func <- function(data.df, ntrn, pred_method){
+            # ntrn = 25
+            train.df = data.df 
+            test.df = data.df 
+            
+                         if(pred_method == "RF"){
+                                fit <- caret::train(BW~. ,
+                                                   data=train.df[,c(2,6,7,9,10)],
+                                                   method="rf",
+                                                   trControl=train_control0,
+                                                   tuneGrid = expand.grid(mtry=4))}
+                                
+                          
+                          if(pred_method == "OLS"){
+                                formu = paste("BW~1+", paste(colnames(train.df)[c(6,7,9,10)], collapse = "+"), sep = "")
+                                fit <- lm(formu, data = train.df)}
+                          
+    
+                          
+                          if(pred_method == "L1"){
+                             fit = caret::train(BW~. ,
+                                                data=train.df[,c(2,6,7,9,10)], 
+                                                method="glmnet", 
+                                                trControl=train_control0,
+                                                verbose = FALSE)
+                                                tuneGrid = expand.grid(alpha = 1,
+                                                                       lambda = 30)                          
+                          }
+                          
+                          
+                          if(pred_method == "L2"){
+                             fit = caret::train(BW~. ,
+                                                data=train.df[,c(2,6,7,9,10)], 
+                                                method="glmnet", 
+                                                trControl=train_control0,
+                                                verbose = FALSE,
+                                                tuneGrid = expand.grid(alpha = 0,
+                                                                       lambda = 30))                         
+                          }
+                          
+                          if(pred_method == "Elastic-Net"){
+                            fit = caret::train(BW~. ,
+                                               data=train.df[,c(2,6,7,9,10)], 
+                                               method="glmnet", 
+                                               trControl=train_control,
+                                               verbose = FALSE)                         
+                          }
+            
+                            ## Metrics #####################
+                            pred = predict(fit, test.df)
+                            r2 = cor(pred, test.df$BW, use="complete.obs")^2
+                            # rmse = mean((pred - test.df$BW)^2, na.rm = T)^0.5
+                            rmse = Metrics::rmse(test.df$BW, pred)
+                            mape = MLmetrics::MAPE(pred, test.df$BW)*100
+                            
+                            ##
+                            pred.vector = c(r2, rmse, mape)
+                            names(pred.vector) = c("R2", "RMSE", "MAPE")
+
+            return(pred.vector)
+}
+```
+
+### Fucntion to use CV0 and return pred results.
+```{r}
+Fitting_cv0_func = function(img_method, pred_method){
+            #loading list data
+                  data.df = preprosess_func(img_method)
+            #fitting cv1      
+                  predr.mat = matrix(NA, nrow = 1, ncol = 3); colnames(predr.mat) = c("R2", "RMSE", "MAPE")
+                  predr.mat[1,] = cv0_func(data.df, ntrn = round(28*0.9), pred_method = pred_method)
+                  print(round(predr.mat, 2)[,c(1,2,3)])
+                  cat("\n \n")
+          }
+```
+
+```{r}
+Fitting_cv0_func("ST", "OLS")
+Fitting_cv0_func("AT", "OLS")
+Fitting_cv0_func("MRCNN", "OLS")
+
+
+Fitting_cv0_func("ST", "L1")
+Fitting_cv0_func("AT", "L1")
+Fitting_cv0_func("MRCNN", "L1")
+
+
+Fitting_cv0_func("ST", "L2")
+Fitting_cv0_func("AT", "L2")
+Fitting_cv0_func("MRCNN", "L2")
+
+# Fitting_cv0_func("ST", "Elastic-Net")
+# Fitting_cv0_func("AT", "Elastic-Net")
+# Fitting_cv0_func("MRCNN", "Elastic-Net")
+```
+
+
+
+
+
+
+
+
+
+########
+# here try to find AIC BIC but failed.
+```{r}
+cv0_func <- function(data.df, pred_method){
+            train.df = data.df
+            test.df = data.df
+
+                          if(pred_method == "RF"){
+                                fit <- caret::train(BW~. ,
+                                                   data=train.df[,c(2,6,7,9,10)],
+                                                   method="rf",
+                                                   trControl=train_control0,
+                                                   tuneGrid = expand.grid(mtry=4))}
+                                
+                          
+                          if(pred_method == "OLS"){
+                                formu = paste("BW~1+", paste(colnames(train.df)[c(6,7,9,10)], collapse = "+"), sep = "")
+                                fit <- lm(formu, data = train.df)}
+                          
+    
+                          
+                          if(pred_method == "L1"){
+                             fit = caret::train(BW~. ,
+                                                data=train.df[,c(2,6,7,9,10)], 
+                                                method="glmnet", 
+                                                trControl=train_control0,
+                                                verbose = FALSE)
+                                                tuneGrid = expand.grid(alpha = 1,
+                                                                       lambda = 30)                          
+                          }
+                          
+                          
+                          if(pred_method == "L2"){
+                             fit = caret::train(BW~. ,
+                                                data=train.df[,c(2,6,7,9,10)], 
+                                                method="glmnet", 
+                                                trControl=train_control0,
+                                                verbose = FALSE,
+                                                tuneGrid = expand.grid(alpha = 0,
+                                                                       lambda = 30))                         
+                          }
+                          
+                          if(pred_method == "Elastic-Net"){
+                            fit = caret::train(BW~. ,
+                                               data=train.df[,c(2,6,7,9,10)], 
+                                               method="glmnet", 
+                                               trControl=train_control,
+                                               verbose = FALSE)                         
+                          }
+            
+                            ## Metrics #####################
+                            pred = predict(fit, test.df)
+                            r2 = cor(pred, test.df$BW, use="complete.obs")^2
+                            # rmse = mean((pred - test.df$BW)^2, na.rm = T)^0.5
+                            rmse = Metrics::rmse(test.df$BW, pred)
+                            mape = MLmetrics::MAPE(pred, test.df$BW)*100
+                            AIC = AIC(loglike(fit))
+                            BIC = BIC(fit)
+                            
+                            ##
+                            pred.vector = c(r2, rmse, mape, AIC, BIC)
+                            names(pred.vector) = c("R2", "RMSE", "MAPE", "AIC", "BIC")
+            return(pred.vector)
+}
+```
+
+```{r}
+Fitting_cv0_func = function(img_method, pred_method){
+            #loading list data
+                  data.df = preprosess_func(img_method)
+            #fitting cv1
+                  predr.mat = matrix(NA, nrow = 1, ncol = 5);colnames(predr.mat) = c("r2", "RMSE", "MAPE","AIC","BIC")
+                  predr.mat[1,] = cv0_func(data.df, pred_method)
+                  print(round(predr.mat, 2)[,c(1,3)])
+                  cat("\n \n")
+          }
+```
+
+```{r}
+cat("Goodness of fit \n\n")
+Fitting_cv0_func("ST", "OLS")
+Fitting_cv0_func("AT", "OLS")
+Fitting_cv0_func("MRCNN", "OLS")
+
+Fitting_cv0_func("ST", "L1")
+Fitting_cv0_func("AT", "L1")
+Fitting_cv0_func("MRCNN", "L1")
+
+
+Fitting_cv0_func("ST", "L2")
+Fitting_cv0_func("AT", "L2")
+Fitting_cv0_func("MRCNN", "L2")
+```
+
+
+

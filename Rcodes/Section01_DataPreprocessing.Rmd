@@ -1,0 +1,501 @@
+---
+title: "Data-Preprossessing and Correlation heatmap drawing"
+author: "Ye Bi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/Github")
+
+```
+
+## Loading packages
+```{r}
+library(readxl)
+library(tidyverse)
+library(reshape2)
+library(ggplot2)
+library(RColorBrewer)
+```
+
+## Read in real_bw and img restuls
+- real_bw0: Holstein
+- real_bw1: Jersey
+
+```{r, eval = F}
+real_bw0 <- read_excel("~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/BWData/C065_BWData_Full.xlsx", sheet="HOLSTEIN_CHAIN_COWS")
+real_bw0 <- real_bw0[,-grep("AVG", colnames(real_bw0))]#remove average bw.
+real_bw0 = real_bw0[,-c(1:2)] #remove useless columns
+real_bw0[real_bw0 == "N/A"] <- NA
+real_bw0 = real_bw0[1:28, ] #just need first 28 days
+real_bw0 = as.data.frame(apply(real_bw0, 2, as.numeric))
+real_bw0[,-1] = real_bw0[,-1] * 0.45359237
+real_bw0$DAY <- factor(real_bw0$DAY, levels = unique(real_bw0$DAY))
+
+real_bw1 <- read_excel("~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/BWData/C065_BWData_Full.xlsx", sheet = "JERSEY_CHAIN_COWS")
+real_bw1 = real_bw1[real_bw1$DAY <= 28, ]
+real_bw1 = real_bw1[,-c(1,3,6)]
+real_bw1[real_bw1 == "N/A"] = NA
+real_bw1 = as.data.frame(apply(real_bw1, 2, as.numeric))
+real_bw1[,-1] = real_bw1[,-1] * 0.45359237
+real_bw1$DAY <- factor(real_bw1$DAY, levels = unique(real_bw1$DAY))
+
+real_bw = merge(real_bw0, real_bw1, by="DAY", all = T)
+colnames(real_bw)[-1] = unlist(lapply(strsplit(colnames(real_bw)[-1], "_"), function(x){paste0(x[1],x[2])}))
+write.csv(real_bw, file = "../outputs/BodyWeight_cleaned.csv", row.names = F, quote = F)
+```
+
+```{r, eval = F}
+library(tidyr)
+
+real_bw = real_bw[1:35,]
+
+#convert wide table into long table.
+bw.df <- gather(real_bw, 
+               key = "cow",
+               value = "BW",
+               -DAY,
+               factor_key = FALSE)
+# bw.df$BW = as.numeric(bw.df$BW) #change lb into kg
+
+plot(1:840, bw.df$BW) #there is one outlier which is lower than 200kg.
+
+bw.df <- bw.df[!bw.df$BW<200, ] #839*3
+bw.df <- na.omit(bw.df) #640*3
+strings <- strsplit(bw.df$cow, "_")
+strings.df <- do.call(rbind, strings)
+bw.df <- cbind.data.frame(bw.df, strings.df)
+colnames(bw.df)[4:5] = c("ID", "Time")
+bw.df <- bw.df %>% arrange(DAY, Time) #arrange them into correct order.
+
+bw.df$timepoint = paste0("D", bw.df$DAY, bw.df$Time)
+bw.df = bw.df[!bw.df$timepoint == "D5AM", ]
+bw.df$timepoint = factor(bw.df$timepoint, levels = unique(bw.df$timepoint))
+bw.df$ID = as.factor(bw.df$ID)
+
+
+```
+
+
+## drawing real body weight line plot
+```{r, eval = F}
+bw.df1 = bw.df
+for (i in 1:12){
+  cowids = as.vector(unique(bw.df1$ID))
+  bw.df1$IDs[bw.df1$ID == cowids[i]] = gsub(cowids[i], i, bw.df1$ID[bw.df1$ID == cowids[i]])
+}
+bw.df1$ID = factor(bw.df1$IDs, levels = 1:12)
+bw.df1$Breed = "Holstein"
+bw.df1$Breed[bw.df1$ID %in% c("11", "12")] = "Jersey"
+ggplot(data = bw.df1, aes(x = timepoint, y = BW, group = ID)) + 
+    # geom_smooth(se = FALSE, method = "loess", formula = y ~ x, size = 0.8, aes(color = ID)) +
+  geom_point(aes(color = ID), size = 1)+
+  geom_line(aes(color = ID), size = 0.8)+
+  ylab("Body weight (kg)")+
+  xlab("Time point")+
+  theme_classic() +
+  # scale_color_manual(values = my_colors) +
+  scale_color_hue()+
+  # scale_fill_brewer()+
+  # scale_fill_viridis_d("A") +
+  # ylim(300, 1200)+
+  # scale_color_manual(values = c(brewer.pal(12, "Set1"))) +
+  theme(axis.title.x = element_text(size = 16, margin = margin(t = 20)),
+        axis.title.y = element_text(size = 16, margin = margin(r = 20)),
+        axis.text.x = element_text(size = 12, angle = 90, hjust=0.5, vjust=0.2), 
+        axis.text.y = element_text(size = 12))
+
+
+# dev.print(pdf, file="~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/Github/outputs/BW_line_map.pdf", height = 6, width = 12)
+
+
+```
+
+
+
+### Preprocess img dataframe.
+#### Combine img descriptors and real body weight into RData.
+```{r, eval = F}
+comb_img_bw_func = function(img_para_path, output_path){
+                    allL = list()
+                    for (i in 1:28){
+                      # i = 1
+                      # j = 1
+                      path_output = paste0(img_para_path, "D", i)
+                      # print(path_output)
+                      cowid <- list.files(path = path_output, pattern = ".csv")
+                      cowid0 <- gsub("AM", "_AM", cowid)
+                      cowid0 <- gsub("PM", "_PM", cowid0)
+                      
+                      
+                      summ = as.data.frame(matrix(NA, nrow = length(cowid0), ncol = 9))
+                      colnames(summ) = c("DAY", "Time", "ID","FullID", "Width", "Length", "Height_Centroid", "Height_average", "Volume")
+                      
+                      for(j in 1:length(cowid)){
+                        # D = paste0("D",i, "_")
+                        data_df = read.csv(file=file.path(paste0(path_output, "/", cowid[j])))
+                        summ[j,5:9] = apply(data_df[,-c(1:3)], 2, median)
+                        
+                        info.str = unlist(strsplit(gsub(".csv", "", cowid0[j]), "_"))
+                        
+                        summ[j,"ID"] = info.str[2]
+                        summ[j,"Time"] = info.str[3]
+                        summ[j, "DAY"] = info.str[1]
+                        summ[j, "FullID"] = paste0(info.str[2], "_", info.str[3])
+                      }
+                      allL[[i]] = summ
+                    }
+                    
+                    names(allL) = paste0("Day", 1:28) #some NA in allL because the cow doesn't pass the QC.
+                    
+                    bw_img.L <- list() 
+                    for (i in 1:28){
+                      img_result = allL[[i]]
+                      real_bw_day = real_bw %>% filter(DAY == i)
+                      img_match = as.data.frame(img_result[img_result$FullID %in% colnames(real_bw_day), ])
+                      real_bw_match = real_bw_day[, colnames(real_bw_day) %in% img_result$FullID]
+                      bw = data.frame(FullID = colnames(real_bw_match), BW = as.numeric(real_bw_match[1,]))
+                      pars.df = as.data.frame(merge(bw, img_match, by="FullID"))
+                      bw_img.L[[i]] = pars.df
+                    }
+                    names(bw_img.L) = paste0("D", 1:28)
+                    save(bw_img.L, file = file.path(output_path,"bw_img.L.RData"))
+                    cat("done with combing image descriptors with real bw \n")
+                }
+```
+
+```{r, eval = F}
+comb_img_bw_func(img_para_path = "~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/outputs_img/ST/", 
+                 output_path = "./outputs_ST")
+
+comb_img_bw_func(img_para_path = "~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/outputs_img/AT/", 
+                 output_path = "outputs_AT")
+
+comb_img_bw_func(img_para_path = "~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/outputs_img/MRCNN/", 
+                 output_path = "outputs_MRCNN")
+```
+
+## 1. Corr for all days
+##Rebuild dataframe
+```{r}
+load("./outputs_ST/bw_img.L.RData")
+bwimg.df = do.call(rbind, bw_img.L) #509
+bwimg.df <- bwimg.df[!bwimg.df$BW<200, ]#508*10
+bwimg.df$FullID = paste0(bwimg.df$DAY, "_", bwimg.df$FullID)
+bwimg.df <- na.omit(bwimg.df)#490*10
+bwimg.single.thr = bwimg.df[,c(1,6,7,8,9,10)]#490*6
+colnames(bwimg.single.thr)[-1] = paste0("sT_", colnames(bwimg.single.thr)[-1])
+
+load("./outputs_AT/bw_img.L.RData")
+bwimg.df = do.call(rbind, bw_img.L) #505*10
+bwimg.df <- bwimg.df[!bwimg.df$BW<200, ] #504*10
+bwimg.df$FullID = paste0(bwimg.df$DAY, "_", bwimg.df$FullID)
+bwimg.df <- na.omit(bwimg.df) #456
+bwimg.adp.thr = bwimg.df[,c(1,6,7,8,9,10)] #456
+colnames(bwimg.adp.thr)[-1] = paste0("aT_", colnames(bwimg.adp.thr)[-1])
+
+load("./outputs_MRCNN/bw_img.L.RData")
+bwimg.df = do.call(rbind, bw_img.L) #516
+bwimg.df <- bwimg.df[!bwimg.df$BW<200, ] #515
+bwimg.df$FullID = paste0(bwimg.df$DAY, "_", bwimg.df$FullID)
+bwimg.df <- na.omit(bwimg.df) #497
+bwimg.mrcnn = bwimg.df
+colnames(bwimg.mrcnn)[-c(1:5)] = paste0("mrcnn_", colnames(bwimg.mrcnn)[-c(1:5)])
+```
+
+
+```{r}
+adp.sig = merge(bwimg.single.thr, bwimg.adp.thr, by = "FullID")
+adp.sig.mrcnn = merge(adp.sig, bwimg.mrcnn, by = "FullID") 
+three.df = data.frame(FullID = adp.sig.mrcnn$FullID,
+                      DAY = adp.sig.mrcnn$DAY,
+                      Time = adp.sig.mrcnn$Time,
+                      Cow = adp.sig.mrcnn$ID,
+                      BW = adp.sig.mrcnn$BW, 
+                      sT_Width = adp.sig.mrcnn$sT_Width,
+                      aT_Width = adp.sig.mrcnn$aT_Width,
+                      mrcnn_Width = adp.sig.mrcnn$mrcnn_Width,
+                      sT_Length = adp.sig.mrcnn$sT_Length,
+                      aT_Length = adp.sig.mrcnn$aT_Length,
+                      mrcnn_Length = adp.sig.mrcnn$mrcnn_Length,
+                      sT_Height_average = adp.sig.mrcnn$sT_Height_average,
+                      aT_Height_average = adp.sig.mrcnn$aT_Height_average,
+                      mrcnn_Height_average = adp.sig.mrcnn$mrcnn_Height_average,
+                      sT_Height_Centroid = adp.sig.mrcnn$sT_Height_Centroid,
+                      aT_Height_Centroid = adp.sig.mrcnn$aT_Height_Centroid,
+                      mrcnn_Height_Centroid = adp.sig.mrcnn$mrcnn_Height_Centroid,
+                      sT_Volume = adp.sig.mrcnn$sT_Volume,
+                      aT_Volume = adp.sig.mrcnn$aT_Volume,
+                      mrcnn_Volume = adp.sig.mrcnn$mrcnn_Volume)
+
+colnames(three.df) = c("FullID", 
+                       "DAY",
+                       "Time",
+                       "Cow",
+                       "Body weight",
+                       "Width-ST",
+                       "Width-AT",
+                       "Width-MRCNN",
+                       "Length-ST",
+                       "Length-AT",
+                       "Length-MRCNN",
+                       "Height-average-ST",
+                       "Height-average-AT",
+                       "Height-average-MRCNN",
+                       "Height-centroid-ST",
+                       "Height-centroid-AT",
+                       "Height-centroid-MRCNN",
+                       "Volume-ST",
+                       "Volume-AT",
+                       "Volume-MRCNN"
+                       )
+```
+
+# All days
+##corr cal
+```{r, eval = F}
+draw_all_day_func <- function(method){
+          allday0 = three.df[,-c(1:4)]
+          
+          if(method == "ST"){selected = c(1, 5, 2,8,11,14); title = "(A)"}
+          if(method == "AT"){selected = c(1,6, 3,9,12,15); title = "(B)"}
+          if(method == "MRCNN"){selected = c(1,7, 4,10,13,16); title = "(C)"}
+          allday = allday0[, selected]
+          colnames(allday) = c("Body weight", "Length", "Width", "Height-average", "Height-centroid", "Volume")
+          cor = cor(allday)
+          c0 = reshape2::melt(cor)
+          c0 = c0%>%arrange(Var1) %>% group_by(Var1) %>% filter(row_number() <= which(Var1 == Var2)) 
+          colnames(c0)[3] = "Correlation"
+          cat("summary", summary(c0[,3]), "\n")
+          
+          p0 = ggplot(c0, aes(x = Var2, y = Var1)) +
+            geom_tile(aes(fill=Correlation), colour="white") + 
+            geom_text(aes(label = sprintf("%0.2f", round(Correlation, digits = 2))), size = 12 /.pt, colour = "white") +
+            scale_fill_viridis_c(alpha = 0.95,  direction = -1, option = "A", limits = c(0.65,1))+
+            ggtitle(title) +
+            ylab("")+
+            xlab("")+
+            ylim(rev(levels(c0$Var1))) + 
+            xlim(levels(c0$Var2)) + 
+            theme_classic()+ #no border
+            theme(plot.title = element_text(size=25, face = "bold", hjust = 0), 
+                  axis.title.x = element_text(size = 16),
+                  axis.title.y = element_text(size = 16),
+                  axis.text.x = element_text(size = 11, angle = 90,hjust=1,vjust=0.5), 
+                  axis.text.y = element_text(size = 11, vjust=0.5),
+                  legend.position = c(.8, .8)) #change legend position
+          
+          
+          
+          return(p0)
+          # dev.print(pdf, file="./outputs/heatmap_all.pdf", height = 8, width = 10)
+}
+```
+
+```{r, eval = F}
+p_st = draw_all_day_func("ST")
+p_at = draw_all_day_func("AT")
+p_mr = draw_all_day_func("MRCNN")
+```
+
+```{r, eval = F}
+ggpubr::ggarrange(p_st, p_at, p_mr,
+          ncol = 2, nrow = 2)
+dev.print(pdf, file="./outputs/heatmap_all_split.pdf", height = 11, width = 11)
+```
+
+## 2. Corr per day 
+```{r, eval = F}
+draw_per_day_func <- function(img_method){
+  
+                perday0 = three.df[,-c(1,3,4)]
+          
+                if(img_method == "ST"){selected = c(1, c(1,5, 2,8,11,14)+1); title = "(A)"}
+                if(img_method == "AT"){selected = c(1, c(1,6,3,9,12,15)+1); title = "(B)"}
+                if(img_method == "MRCNN"){selected = c(1, c(1,7,4,10,13,16)+1); title = "(C)"}
+                
+                perday = perday0[, selected]
+                paras = c("Length", "Width","Height-average", "Height-centroid", "Volume")
+                colnames(perday) = c("DAY", "Body weight", paras)
+                perday$DAY = factor(perday$DAY, levels = paste0("D", 1:length(unique(perday$DAY))))
+
+                perday.L = perday %>% group_split(DAY) 
+                corr_perday = matrix(NA, 28, 5); colnames(corr_perday) = paras
+                
+                for (i in 1:28){
+                  # i = 1
+                  perday.df = as.data.frame(perday.L[[i]])
+                  for (j in 1:5){
+                  corr_perday[i,j] = cor(as.numeric(perday.df[, "Body weight"]), as.numeric(perday.df[, 2+j]), use="complete.obs") 
+                  }
+                }
+                
+                c1 = reshape2::melt(corr_perday); colnames(c1) = c("Day", "Pars", "Correlation")
+                c1$Pars = factor(c1$Pars, levels = paras)
+                cat("summary", summary(c1[,3]), "\n")
+
+                c1$Day = as.factor(c1$Day)
+                p1 = ggplot(c1, aes(x = Day, y = Pars, fill=Correlation)) +
+                  geom_tile(colour="white") + 
+                  scale_fill_viridis_c(alpha = 0.95, limits = c(0.3, 1),  direction = -1, option = "A")+
+                  ggtitle(title) +
+                  ylab("")+
+                  xlab("")+
+                  ylim(rev(levels(c1$Pars))) +
+                  # theme_bw() +
+                  theme_classic()+
+                  theme(plot.title = element_text(size=18, face = "bold", hjust = 0), 
+                        axis.title.x = element_text(size = 16),
+                        axis.title.y = element_text(size = 16),
+                        axis.text.x = element_text(size = 8, angle = 0,hjust=0.5,vjust=0.2), 
+                        axis.text.y = element_text(size = 10))
+                return(p1)
+          
+                }
+# dev.print(pdf, file="./outputs/heatmap_perDay.pdf", height = 8, width = 10)
+```
+
+```{r, eval = F}
+p_st = draw_per_day_func("ST")
+p_at = draw_per_day_func("AT")
+p_mr = draw_per_day_func("MRCNN")
+```
+
+```{r, eval = F}
+ggpubr::ggarrange(p_st, p_at, p_mr,
+          ncol = 1, nrow = 3)
+dev.print(pdf, file="./outputs/heatmap_perDay_split.pdf", height = 8, width = 7)
+```
+
+
+
+## 3. Corr per day AM PM 
+```{r, eval = F}
+draw_per_ampm_func <- function(img_method, Ttime, title){
+  
+                if(Ttime == "AM"){three.df.apm <- three.df %>% filter(Time == "AM")}
+                if(Ttime == "PM"){three.df.apm <- three.df %>% filter(Time == "PM")}
+                
+                perday0 = three.df.apm[,-c(1,3,4)]
+          
+                if(img_method == "ST"){selected = c(1, c(1,5,2,8,11,14)+1)}
+                if(img_method == "AT"){selected = c(1, c(1,6,3,9,12,15)+1)}
+                if(img_method == "MRCNN"){selected = c(1, c(1,7,4,10,13,16)+1)}
+                
+                perday = perday0[, selected]
+                paras = c("Length","Width",  "Height-average", "Height-centroid", "Volume")
+                colnames(perday) = c("DAY", "Body weight", paras)
+                
+                perday$DAY = factor(perday$DAY, levels = paste0("D", 1:length(unique(perday$DAY))))
+                perday.L = perday %>% group_split(DAY) 
+                corr_perday = matrix(NA, length(perday.L), 5); colnames(corr_perday) = paras
+                
+                for (i in 1:length(perday.L)){
+                  # i = 1
+                  perday.df = as.data.frame(perday.L[[i]])
+                  for (j in 1:5){
+                  corr_perday[i,j] = cor(as.numeric(perday.df[, "Body weight"]), as.numeric(perday.df[, 2+j]), use="complete.obs") 
+                  }
+                }
+                
+                c1 = reshape2::melt(corr_perday); colnames(c1) = c("Day", "Pars", "Correlation")
+                c1$Pars = factor(c1$Pars, levels = paras)
+                cat("summary", summary(c1[,3]), "\n")
+
+                c1$Day = as.factor(c1$Day)
+                p1 = ggplot(c1, aes(x = Day, y = Pars, fill=Correlation)) +
+                  geom_tile(colour="white") + 
+                  scale_fill_viridis_c(alpha = 0.95, limits = c(0.06, 1),  direction = -1, option = "A")+
+                  ggtitle(title) +
+                  ylab("")+
+                  xlab("")+
+                  ylim(rev(levels(c1$Pars))) +
+                  # theme_bw() +
+                  theme_classic()+
+                  theme(plot.title = element_text(size=18, face = "bold", hjust = 0), 
+                        axis.title.x = element_text(size = 16),
+                        axis.title.y = element_text(size = 16),
+                        axis.text.x = element_text(size = 8, angle = 0,hjust=0.5,vjust=0.2), 
+                        axis.text.y = element_text(size = 10))
+                return(p1)
+          
+                }
+```
+
+
+```{r, eval = F}
+p1 = draw_per_ampm_func("ST", "AM", "(A)")
+p2 = draw_per_ampm_func("ST", "PM", "(B)")
+p3 = draw_per_ampm_func("AT", "AM", "(C)")
+p4 = draw_per_ampm_func("AT", "AM", "(D)")
+p5 = draw_per_ampm_func("MRCNN", "AM", "(E)")
+p6 = draw_per_ampm_func("MRCNN", "PM", "(F)")
+```
+
+```{r, eval = F}
+ggpubr::ggarrange(p1, p2, p3, p4, p5, p6,
+          ncol = 2, nrow = 3)
+dev.print(pdf, file="./outputs/heatmap_perDayAMPM_split.pdf", height = 8, width = 13)
+```
+
+## 4. Calculate corr per cow ----
+```{r}
+draw_per_cow_func <- function(img_method){
+            
+            percow0 = three.df[,-c(1,2,3)]
+          
+            if(img_method == "ST"){selected = c(1, c(1,2,5,8,11,14)+1);title = "(A)"}
+            if(img_method == "AT"){selected = c(1, c(1,3,6,9,12,15)+1);title = "(B)"}
+            if(img_method == "MRCNN"){selected = c(1, c(1,4,7,10,13,16)+1);title = "(C)"}
+            
+            percow.df = percow0[, selected]
+            paras = c("Width", "Length", "Height-average", "Height-centroid", "Volume")
+            colnames(percow.df) = c("Cow", "Body weight", paras)
+            
+            percow.L = percow.df %>% group_split(Cow)
+            corr_percow = matrix(NA, length(percow.L), 5); colnames(corr_percow) = paras
+            
+            for(i in 1:length(percow.L)){
+              # i = 1
+              percow = as.data.frame(percow.L[[i]])
+              
+             for (j in 1:5){
+               corr_percow[i,j] = cor(as.numeric(percow[, "Body weight"]), as.numeric(percow[, 2+j]), use="complete.obs") #Width
+             }
+            }
+            c2 = reshape2::melt(corr_percow); colnames(c2) = c("Cow", "Pars", "Correlation")
+            c2$Pars = factor(c2$Pars, levels = paras)
+            c2$Cow = factor(c2$Cow, levels = unique(c2$Cow))
+            cat("summary", summary(c2[,3]), "\n")
+            p2 = ggplot(c2, aes(x = Cow, y = Pars, fill=Correlation)) +
+              geom_tile(colour="white") + 
+              scale_fill_viridis_c(alpha = 0.95, direction = -1, option = "A")+
+              ggtitle(title) +
+              ylab("")+
+              xlab("")+
+              ylim(rev(levels(c2$Pars))) +
+              theme_bw() +
+              theme(plot.title = element_text(size=18, face = "bold", hjust = 0), 
+                    axis.title.x = element_text(size = 16),
+                    axis.title.y = element_text(size = 16),
+                    axis.text.x = element_text(size = 11, angle = 0,hjust=0.5,vjust=0.2), 
+                    axis.text.y = element_text(size = 11))
+            return(p2)
+            }
+# dev.print(pdf, file="./outputs/heatmap_perCow.pdf", height = 8, width = 10)
+```
+
+```{r, eval = F}
+p_st = draw_per_cow_func("ST")
+p_at = draw_per_cow_func("AT")
+p_mr = draw_per_cow_func("MRCNN")
+```
+
+```{r, eval = F}
+ggpubr::ggarrange(p_st, p_at, p_mr,
+          ncol = 1, nrow = 3)
+dev.print(pdf, file="./outputs/heatmap_perCow_split.pdf", height = 8, width = 7)
+```
