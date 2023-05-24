@@ -1,0 +1,367 @@
+---
+title: "Prediction-CV2"
+author: "Ye Bi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/Github")
+```
+
+## Loading packages 
+```{r}
+# setwd("~/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/Github")
+library(readxl)
+library(tidyverse)
+library(reshape2)
+library(MLmetrics)
+library(caret)
+library(RColorBrewer)
+library(glmnet)
+library(Matrix)
+```
+
+## Load all self-made functions.
+```{r}
+source("./Functions.R")
+```
+
+## Build CV split in caret.
+- Ref: https://topepo.github.io/caret/index.html
+- Caret combines lots of functions, we can run basic machine learning models with hyperparameter tunning in it.
+```{r}
+train_control = trainControl(method="cv", number = 5, savePredictions = TRUE, classProbs = F)
+train_control0 = trainControl(method="none", savePredictions = TRUE, classProbs = F)
+```
+
+
+## CV2: Leave three cows out CV
+- 3 cows
+#### cv2 function without sparse
+```{r}
+cv2_func <- function(data.df, ntst=3, pred_method, img_method){
+  
+          ncow = length(unique(data.df$ID))
+          ntrn = ncow-ntst
+          test.ix = combn(ncow, ntst)
+          cow_id = unique(data.df$ID)
+        
+              pred.L = list()
+              for(i in 1:ncol(test.ix)){
+                
+                          test.df = data.df %>% filter(ID %in% cow_id[c(test.ix[,i])]) %>% droplevels()
+                          train.df = data.df %>% filter(!(ID %in% cow_id[c(test.ix[,i])])) %>% droplevels()
+                          
+                          if(pred_method == "RF"){
+                                fit <- caret::train(BW~. ,
+                                                   data=train.df[,c(2,6,7,9,10)],
+                                                   method="rf",
+                                                   trControl=train_control0,
+                                                   tuneGrid = expand.grid(mtry=4))}
+                                
+                          
+                          if(pred_method == "OLS"){
+                                formu = paste("BW~1+", paste(colnames(train.df)[c(6,7,9,10)], collapse = "+"), sep = "")
+                                fit <- lm(formu, data = train.df)}
+                          
+                          # 
+                          # if(pred_method == "XGBoost"){
+                          #   fit = caret::train(BW~. ,
+                          #                      data=train.df[,c(2,6,7,9,10)],
+                          #                      method="xgbTree",
+                          #                      trControl=train_control,
+                          #                      verbose = FALSE)
+                          # }
+                          # 
+                          
+                          if(pred_method == "L1"){
+                             fit = caret::train(BW~. ,
+                                                data=train.df[,c(2,6,7,9,10)], 
+                                                method="glmnet", 
+                                                trControl=train_control0,
+                                                verbose = FALSE)
+                                                tuneGrid = expand.grid(alpha = 1,
+                                                                       lambda = 30)                          
+                          }
+                          
+                          
+                          if(pred_method == "L2"){
+                             fit = caret::train(BW~. ,
+                                                data=train.df[,c(2,6,7,9,10)], 
+                                                method="glmnet", 
+                                                trControl=train_control0,
+                                                verbose = FALSE,
+                                                tuneGrid = expand.grid(alpha = 0,
+                                                                       lambda = 30))                         
+                          }
+                          
+                          if(pred_method == "Elastic-Net"){
+                            fit = caret::train(BW~. ,
+                                               data=train.df[,c(2,6,7,9,10)], 
+                                               method="glmnet", 
+                                               trControl=train_control,
+                                               verbose = FALSE,
+                                               tuneGrid = expand.grid(alpha = c(0.2, 0.4, 0.6, 0.8),
+                                                                       lambda = 30))                         
+                          }
+                            ## Metrics #####################
+                            pred = predict(fit, test.df)
+                            r2 = cor(pred, test.df$BW, use="complete.obs")^2
+                            rmse = mean((pred - test.df$BW)^2, na.rm = T)^0.5
+                            mape = MLmetrics::MAPE(pred, test.df$BW)*100
+                            
+                            ##
+                            pred.L[[i]] = c(r2, rmse, mape, cow_id[c(test.ix[,i])])
+                            names(pred.L[[i]]) = c("R2", "RMSE", "MAPE", "Cow1", "Cow2", "Cow3")
+                          
+                          }
+                          
+                          #convert list into dataframe.
+                          pred.df = as.data.frame(do.call(rbind, pred.L))
+                          pred.df[,1:3] = sapply(pred.df[, 1:3], as.numeric)
+                          
+                          #save results
+                          dir.create(paste0("./outputs_", img_method, "/", pred_method))
+                          save(pred.df, file=paste0("./outputs_", img_method, "/", pred_method, "/CV2_predr.RData"))
+                          
+          }
+              
+          
+```
+
+```{r, eval = F}
+Fitting_cv2_func = function(img_method, pred_method){
+  
+                  data.df = preprosess_func(img_method)
+                  
+                  ##fitting
+                  ##############################
+                  cv2_func(data.df, 3, pred_method = pred_method, img_method = img_method)
+                  
+            }
+```
+
+
+```{r, eval = F}
+Fitting_cv2_func("ST", "OLS")
+Fitting_cv2_func("AT", "OLS")
+Fitting_cv2_func("MRCNN", "OLS")
+
+
+# Fitting_cv2_func("ST", "RF")
+# Fitting_cv2_func("AT", "RF")
+# Fitting_cv2_func("MRCNN", "RF")
+
+Fitting_cv2_func("ST", "L1")
+Fitting_cv2_func("AT", "L1")
+Fitting_cv2_func("MRCNN", "L1")
+
+
+Fitting_cv2_func("ST", "L2")
+Fitting_cv2_func("AT", "L2")
+Fitting_cv2_func("MRCNN", "L2")
+
+# Fitting_cv2_func("ST", "Elastic-Net")
+# Fitting_cv2_func("AT", "Elastic-Net")
+# Fitting_cv2_func("MRCNN", "Elastic-Net")
+```
+
+
+#### drawing boxplots    
+
+```{r}
+img_methods = c("ST", "AT", "MRCNN")
+pred_methods = c("OLS", "L1", "L2")
+pred_methods_revise = c("OLS", "LASSO", "RR")
+pred_methods_revise_ordered = c("OLS", "RR", "LASSO")
+
+R2.L = list()
+m = 0
+for(i in 1:length(pred_methods)){
+  for(j in 1:length(img_methods)){
+    m = m + 1
+    cat(m, "\n")
+    pred.df = load_func(img_methods[j], pred_methods[i])
+    temp = data.frame(R2 = pred.df$R2, 
+                      img_method = img_methods[j],
+                      pred_method = pred_methods_revise[i])
+    R2.L[[m]] = temp
+  }
+}
+
+R2.df = do.call(rbind.data.frame, R2.L)
+R2.df$img_method = factor(R2.df$img_method, levels = img_methods)
+R2.df$pred_method = factor(R2.df$pred_method, levels = pred_methods_revise_ordered)
+
+R2.df %>% group_by(img_method, pred_method) %>% 
+  summarise(mean_R2=mean(R2),
+            .groups = 'drop')
+```
+
+```{r}
+my_colors <- RColorBrewer::brewer.pal(8, "Spectral")[c(1, 4, 8)]
+
+p_cv2_r2 =
+  ggplot(R2.df, aes(x = pred_method, y=R2, fill = img_method)) + 
+  geom_boxplot(outlier.size = 0.3, outlier.alpha = 0.7) + 
+  theme_classic() +
+  scale_fill_manual(values = my_colors) +
+  # scale_fill_brewer(palette = "RdYlBu", direction = 1)+
+  labs(x = NULL, 
+       y = "Coefficients of determination") + 
+  guides(fill=guide_legend(title="Model"))+
+  theme(text=element_text(size=22, hjust=0.5),
+        plot.title = element_text(size=25, face = "bold", hjust = 0))+
+  ggtitle("(A)")
+  
+
+# print(p_cv2_r2)
+
+# dev.print(pdf, "./outputs/cv2_pred_R2.pdf", height = 8, width = 10)
+```
+
+
+```{r}
+img_methods = c("ST", "AT", "MRCNN")
+pred_methods = c("OLS", "L1", "L2")
+pred_methods_revise = c("OLS", "LASSO", "RR")
+pred_methods_revise_ordered = c("OLS", "RR", "LASSO")
+
+MAPE.L = list()
+m = 0
+for(i in 1:length(pred_methods)){
+  for(j in 1:length(img_methods)){
+    m = m + 1
+    cat(m, "\n")
+    pred.df = load_func(img_methods[j], pred_methods[i])
+    temp = data.frame(MAPE = pred.df$MAPE, 
+                      img_method = img_methods[j],
+                      pred_method = pred_methods_revise[i])
+    MAPE.L[[m]] = temp
+  }
+}
+
+MAPE.df = do.call(rbind.data.frame, MAPE.L)
+MAPE.df$img_method = factor(MAPE.df$img_method, levels = img_methods)
+MAPE.df$pred_method = factor(MAPE.df$pred_method, levels = pred_methods_revise_ordered)
+```
+```{r}
+MAPE.df %>% group_by(img_method, pred_method) %>% 
+  summarise(mean_MAPE=mean(MAPE),
+            .groups = 'drop')
+```
+
+
+```{r}
+my_colors <- RColorBrewer::brewer.pal(8, "Spectral")[c(1, 4, 8)]
+
+p_cv2_MAPE =
+ggplot(MAPE.df, aes(x=pred_method, y=MAPE, fill = img_method)) + 
+  # geom_violin(trim = T)+
+  geom_boxplot(outlier.size = 0.3, outlier.alpha = 0.7) + 
+  # scale_fill_viridis_d(alpha = 0.95,  direction = -1, option = "H") +
+  # geom_jitter(shape=16, position=position_jitter(0.2)) + 
+  theme_classic() +
+  scale_fill_manual(values = my_colors) +
+  # scale_fill_brewer(palette="Blues") +
+  labs(x = NULL, 
+       y = "Mean absolute percentage error") + 
+  scale_y_continuous( breaks=c(5,10,15,20)) +
+  guides(fill=guide_legend(title="Model"))+
+  theme(text=element_text(size=22, hjust=0.5),
+        plot.title = element_text(size=25, face = "bold", hjust = 0))+
+  ggtitle("(B)")
+# dev.print(pdf, "./outputs/cv2_pred_MAPE.pdf", height = 8, width = 10)
+```
+
+```{r}
+ggpubr::ggarrange(p_cv2_r2, p_cv2_MAPE,
+          ncol = 2, nrow = 1)
+dev.print(pdf, file="./outputs/cv2_pred.pdf", height = 8, width = 20)
+```
+
+
+
+
+
+
+
+```{r}
+img_methods = c("ST", "AT", "MRCNN")
+pred_methods = c("OLS", "L1", "L2")
+pred_methods_revise = c("OLS", "LASSO", "RR")
+pred_methods_revise_ordered = c("OLS", "RR", "LASSO")
+
+
+RMSE.L = list()
+m = 0
+for(i in 1:length(pred_methods)){
+  for(j in 1:length(img_methods)){
+    m = m + 1
+    cat(m, "\n")
+    pred.df = load_func(img_methods[j], pred_methods[i])
+    temp = data.frame(RMSE = pred.df$RMSE, 
+                      img_method = img_methods[j],
+                      pred_method = pred_methods_revise[i])
+    RMSE.L[[m]] = temp
+  }
+}
+
+RMSE.df = do.call(rbind.data.frame, RMSE.L)
+RMSE.df$img_method = factor(RMSE.df$img_method, levels = img_methods)
+RMSE.df$pred_method = factor(RMSE.df$pred_method, levels = pred_methods_revise_ordered)
+```
+
+```{r}
+my_colors <- RColorBrewer::brewer.pal(8, "Spectral")[c(1, 4, 8)]
+
+ggplot(RMSE.df, aes(x = pred_method, y=RMSE, fill = img_method)) + 
+  geom_boxplot(outlier.size = 0.3, outlier.alpha = 0.7) + 
+  theme_classic() +
+  scale_fill_manual(values = my_colors) +
+  # scale_fill_brewer(palette = "RdYlBu", direction = 1)+
+  labs(x = NULL, 
+       y = "RMSE") + 
+  guides(fill=guide_legend(title="Model"))+
+  theme(text=element_text(size=22, hjust=0.5))
+
+dev.print(pdf, "./outputs/cv2_pred_RMSE.pdf", height = 8, width = 10)
+```
+
+### CV2- top/bottom 5 drawing -- ols
+
+```{r}
+load("./outputs_ST/OLS/CV2_predr.RData")
+r3.sig.thr = pred.df
+# write.csv(r3.sig.thr, "./outputs/r3_ST.csv", row.names = F, quote = F)
+load("./outputs_AT/OLS/CV2_predr.RData")
+r3.adp.thr = pred.df
+# write.csv(r3.adp.thr, "./outputs/r3_AT.csv", row.names = F, quote = F)
+
+load("./outputs_MRCNN/OLS/CV2_predr.RData")
+r3.mrcnn = pred.df
+# write.csv(r3.mrcnn, "./outputs/r3_MRCNN.csv", row.names = F, quote = F)
+```
+
+```{r}
+# plot_draw_function(method = "ST", decide = "MAPE")
+# plot_draw_function(method = "AT", decide = "MAPE")
+top_r2 = plot_draw_function(method = "MRCNN", decide = "R2", orr = "TOP")
+bot_r2 = plot_draw_function(method = "MRCNN", decide = "R2", orr = "BOT")
+top_mape = plot_draw_function(method = "MRCNN", decide = "MAPE", orr = "TOP")
+bot_mape = plot_draw_function(method = "MRCNN", decide = "MAPE", orr = "BOT")
+```
+
+
+```{r}
+ggpubr::ggarrange(top_r2, bot_r2,
+                  top_mape, bot_mape,
+                  ncol = 2, nrow = 2,
+                  labels = c("(A)", "(B)", "(C)", "(D)"),
+                  font.label = list(size = 20))
+dev.print(pdf, file="./outputs/plot_topbot_MRCNN.pdf", height = 13, width = 17)
+```
+
+

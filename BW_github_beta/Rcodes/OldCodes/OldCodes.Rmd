@@ -1,0 +1,249 @@
+---
+title: "Temp Codes"
+author: "Ye Bi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+##########################################################################################
+- CV3: Random repeated subsampling cross validation.
+- CV2 with sparse: Leave-several-cow-out with random sample from timepoints
+##########################################################################################
+
+
+## CV3
+### cv3 function with just sparse without leaving cow out.
+```{r}
+cv3_sparse_noleave_func <- function(data.df, ntst){
+   
+          predr2L = list()
+          for(i in 1:100){
+                      set.seed(i)
+                      fullID_test = sample(data.df$FullID, nrow(data.df)*ntst)
+                      test.df = data.df %>% filter(FullID %in% fullID_test) %>% droplevels()
+                      train.df = data.df %>% filter(!(FullID %in% fullID_test)) %>% droplevels()
+            
+                      ##OLS###################
+                      formu = paste("BW~1+", paste(colnames(train.df)[c(6,7,9,10)], collapse = "+"), sep = "")
+                      fit2 <- lm(formu, data = train.df)
+
+                      pred2 <- predict(fit2, test.df)
+                      corr2 = cor(pred2, test.df$BW, use="complete.obs")
+                      mse2 = mean((pred2 - test.df$BW)^2, na.rm = T)
+          
+                      mape2 = MLmetrics::MAPE(pred2, test.df$BW)*100
+          
+                      predr2L[[i]] = c(corr2^2, mse2, mape2)
+                      names(predr2L[[i]]) = c("corr_OLS", "MSE_OLS", "MAPE_OLS")
+            }
+                return(do.call(rbind, predr2L))
+          }
+```
+### fitting cv3 function
+```{r}
+Fitting_cv3_func = function(method){
+            #loading list data
+                  cat("##", method, "\n")
+                  load(paste0("./outputs_", method, "/bw_img.L.RData"))
+                  data.df = do.call(rbind, bw_img.L)
+                  
+                  data.df$day = as.numeric(gsub("D", "", data.df$DAY))
+                  
+                  data.df$FullID = paste0(data.df$DAY,"_", data.df$FullID)
+                  rownames(data.df) = data.df$FullID
+                  
+                  data.df$day_time = paste0(data.df$DAY, data.df$Time)
+                  data.df = data.df[!data.df$BW<200, ] #remove outlier in BW
+                  data.df = na.omit(data.df) # remove NA in the whole dataframe.
+                  # data.df = data.df %>% filter(! ID %in% c("4973", "5145", "5532")) %>% droplevels()
+                  
+                  ##fitting
+                  ##############################                  
+                  predr1 = cv3_sparse_noleave_func(data.df, 0.1)
+                  ##############################                  
+                  predr2 = cv3_sparse_noleave_func(data.df, 0.2)
+                  ##############################
+                  predr3 = cv3_sparse_noleave_func(data.df, 0.3)
+                  
+                  save(predr1, predr2, predr3, file=paste0("./outputs_", method, "/CV3_predr.RData"))
+            }
+```
+
+```{r}
+Fitting_cv3_func("ST")
+Fitting_cv3_func("AT")
+Fitting_cv3_func("MRCNN")
+```
+
+
+
+### drawing plots    
+```{r}
+load("./outputs_ST/CV3_predr.RData")
+r1.sig.thr = predr1
+r2.sig.thr = predr2
+r3.sig.thr = predr3
+
+load("./outputs_AT/CV3_predr.RData")
+r1.adp.thr = predr1
+r2.adp.thr = predr2
+r3.adp.thr = predr3
+
+
+load("./outputs_MRCNN/CV3_predr.RData")
+r1.mrcnn = predr1
+r2.mrcnn = predr2
+r3.mrcnn = predr3
+
+
+```
+
+
+
+```{r}
+rr1_func = function(r1, r2, r3, name){
+          rr1 = rbind.data.frame(cbind(r1[,1],"10%", paste0("OLS", name)),
+                                cbind(r2[,1],"20%", paste0("OLS", name)),
+                                cbind(r3[,1], "30%", paste0("OLS", name)))
+
+          colnames(rr1) = c("R2", "Method", "Model")
+
+          rr1$Method = factor(rr1$Method, levels = c("10%",   "20%", "30%"))
+          rr1$R2 = as.numeric(rr1$R2)
+          return(rr1)
+             }
+
+rr1.sig.thr = rr1_func(r1.sig.thr, r2.sig.thr, r3.sig.thr,name = "-ST")
+rr1.adp.thr = rr1_func(r1.adp.thr, r2.adp.thr, r3.adp.thr, name = "-AT")
+rr1.mrcnn = rr1_func(r1.mrcnn, r2.mrcnn, r3.mrcnn, name = "-MRCNN")
+rr1 = rbind(rr1.sig.thr, rr1.adp.thr, rr1.mrcnn)
+ll = c("OLS-ST", "OLS-AT", "OLS-MRCNN")
+rr1$Model = factor(rr1$Model, levels = ll)
+```
+
+```{r}
+
+ggplot(rr1, aes(x=Method, y=R2, fill = Model)) + 
+  geom_boxplot(outlier.size = 0.5, outlier.alpha = 0.7) + 
+  # geom_jitter(shape=16, position=position_jitter(0.2, 0.3)) + 
+  theme_classic() +
+  scale_fill_brewer(palette = "RdBu")+
+  labs(x="Cross validation design", 
+       y = "Coefficients of determination") + 
+  # scale_y_continuous(limits=c(0, 1), breaks=c(0,0.25,0.5,0.75,1)) +
+  theme(text=element_text(size=16, hjust=0.5))
+dev.print(pdf, "./outputs/cv3_pred1_RF_ols.pdf", height = 8, width = 10)
+  
+```
+
+```{r}
+rr3_func = function(r1, r2, r3, name){
+          
+          rr3 = rbind.data.frame(cbind(r1[,3],"10%", paste0("OLS", name)), 
+                                cbind(r2[,3],"20%", paste0("OLS", name)), 
+                                cbind(r3[,3], "30%", paste0("OLS", name)))
+          colnames(rr3) = c("MAPE", "Method", "Model")
+
+          rr3$Method = factor(rr3$Method, levels = c("10%",   "20%", "30%" ))
+          rr3$MAPE = as.numeric(rr3$MAPE)
+          return(rr3)
+             }
+
+rr3.sig.thr = rr3_func(r1.sig.thr, r2.sig.thr, r3.sig.thr,  name = "-ST")
+rr3.adp.thr = rr3_func(r1.adp.thr, r2.adp.thr, r3.adp.thr,  name = "-AT")
+rr3.mrcnn = rr3_func(r1.mrcnn, r2.mrcnn, r3.mrcnn, name = "-MRCNN")
+rr3 = rbind(rr3.sig.thr, rr3.adp.thr, rr3.mrcnn)
+ll = c("OLS-ST", "OLS-AT", "OLS-MRCNN")
+rr3$Model = factor(rr3$Model, levels = ll)
+```
+
+
+```{r}
+my_colors <- RColorBrewer::brewer.pal(11, "RdBu")[3:9]
+
+ggplot(rr3, aes(x=Method, y=MAPE, fill = Model)) + 
+  # geom_violin(trim = T)+
+  geom_boxplot(outlier.size = 0.5, outlier.alpha = 0.7) + 
+  # scale_fill_viridis_d(alpha = 0.95,  direction = -1, option = "H") +
+  # geom_jitter(shape=16, position=position_jitter(0.2)) + 
+  theme_classic() +
+  # scale_fill_manual(values = my_colors) +
+  scale_fill_brewer(palette="RdBu") +
+  labs(x="Cross validation design", 
+       y = "Mean absolute percentage error") + 
+  scale_y_continuous( breaks=c(5,10,15,20)) +
+  theme(text=element_text(size=16, hjust=0.5))
+dev.print(pdf, "./outputs/cv3_pred2_RF_ols.pdf", height = 8, width = 10)
+```
+
+
+
+
+
+
+###deleted code
+### cv2 function with sparse
+```{r}
+# cv2_sparse_func <- function(data.df, ntst, ntst_dt){
+#           # training and testing split for cows
+#           ncow = length(unique(data.df$ID))
+#           ntst = ntst 
+#           ntrn = ncow-ntst
+#           test.ix = combn(ncow, ntst)
+#           cow_id = unique(data.df$ID)
+#           
+#           # training and testing split for day_timepoints
+#           ntst_dt = ntst_dt #will be 10%, 20%, 30%, 40%, 50% of total 55
+#           dts = unique(data.df$day_time) #total daytime we have
+#           #choose(55,5) #3478761
+#           
+#           
+#           predr2.L = list()
+#           
+#           predr2.df = matrix(NA, nrow = 50, ncol = 3)
+#           for(i in 1:ncol(test.ix)){
+#                       # 
+#                 for (j in 1:50){
+#                       
+#                       # cat("Now is running i=",i, ", j=",j,"\n")
+#                       # Select day timepoints.
+#                       set.seed(j)
+#                       dt_test.ix = sample(dts, size = ntst_dt)
+#                       
+#                       test.df = data.df %>% filter(ID %in% cow_id[c(test.ix[,i])] &
+#                                                    day_time %in% dt_test.ix) %>% droplevels()
+#                       
+#                       train.df = data.df %>% filter(!(FullID %in% test.df$FullID)) %>% droplevels()
+#                       
+#                       # cat("Dim of test.df is:", nrow(test.df), "train.df is:", nrow(train.df), "\n")
+#                       if(nrow(test.df) == 0 | nrow(test.df) == 1){
+#                         next
+#                       }
+#                       else{
+#                      
+#             
+#                       ##OLS###################
+#                       formu = paste("BW~1+", paste(colnames(train.df)[c(6,7,9,10)], collapse = "+"), sep = "")
+#                       fit1 <- lm(formu, data = train.df)
+#                       # summary(fit1)
+#                       pred2 <- predict(fit1, test.df)
+#                       corr2 = cor(pred2, test.df$BW)
+#                       # , use="complete.obs")
+#                       mse2 = mean((pred2 - test.df$BW)^2, na.rm = T)
+#           
+#                       mape2 = MLmetrics::MAPE(pred2, test.df$BW)*100
+#           
+#                       # predr2[[i]] = c(corr1^2, mse1, mape1, corr2^2, mse2, mape2)
+#                       # names(predr2[[i]]) = c("r2_RF", "MSE_RF", "MAPE_RF", "r2_OLS", "MSE_OLS", "MAPE_OLS")
+#                       predr2.df[j, ] = c(corr2^2, mse2, mape2)
+#                       
+#                       }
+# 
+#                 }
+#                       predr2.L[[i]] = predr2.df
+#                       colnames(predr2.L[[i]]) = c("r2_OLS", "MSE_OLS", "MAPE_OLS")
+#                       
+#             }
+#                 return(do.call(rbind, predr2.L))
+#           }
+```
