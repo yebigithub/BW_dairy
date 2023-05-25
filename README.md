@@ -1,5 +1,5 @@
 # Depth video data-enabled predictions of longitudinal dairy cow body weight using thresholding and Mask R-CNN algorithms
-This reporsitory includes:
+This repository includes:
 1. Thresholding methods
     * 1.1 Single threshold method.
     * 1.2 Adpative threshold method.
