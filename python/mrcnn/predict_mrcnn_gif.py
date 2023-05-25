@@ -145,7 +145,7 @@ def predict_mrcnn(image):
                               config=inference_config,
                               model_dir=MODEL_DIR)
 
-    model_path = "/Users/yebi/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/BW_github_beta/python/mrcnn/MaskRCNN_Train/mask_rcnn_cow.h5"
+    model_path = "/Users/yebi/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/MaskRCNN_training/MaskRCNN_Code/mask_rcnn_cow.h5"
 
     # Load trained weights
     tf.keras.Model.load_weights(model.keras_model, model_path, by_name=True)
