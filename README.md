@@ -20,7 +20,6 @@
 
 ```
 ## How to used our customized LabelMe.
-cd ./
 ## Code used to start label png into json files.
 labelme ./depth/cow.png -O ./outputs/cow.json
 ```
@@ -30,7 +29,11 @@ labelme ./depth/cow.png -O ./outputs/cow.json
 # Code used to transfer json files into folders.
 labelme_json_to_dataset ./outputs/cow.json -o ./outputs/cow_json
 ```
-### 2.1 Mask-RCNN method
+### 2.2 Mask-RCNN method
+#### 2.2.1 Training Mask-RCNN model
+- [.ipynb file](https://github.com/yebigithub/BW_github_beta/blob/main/python/mrcnn/MaskRCNN_Train/YB_train_cow_TF2_8.ipynb) 
+- [.h5 file]()
+#### 2.2.2 Predict depth images by trained Mask-RCNN model.
 - [.py file](https://github.com/yebigithub/BW_github_beta/blob/main/python/mrcnn/ImageAnalysis_mrcnn.py)
 <img src='https://github.com/yebigithub/BW_github_beta/blob/main/picts/MRCNN.png?raw=true' width='70%' height='70%'>
 
