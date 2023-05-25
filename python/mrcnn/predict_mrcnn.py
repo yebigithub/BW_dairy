@@ -70,7 +70,7 @@ def predict_mrcnn(image):
     tf.keras.Model.load_weights(model.keras_model, model_path, by_name=True)
 
     # Predict with mrcnn
-    results = model.detect([image], verbose=1)
+    results = model.detect([image], verbose=0)
     r = results[0] # keep the results from the largest IoU
     c2 = np.argwhere(r['masks'][:,:,0])
     mask2 = np.zeros(image[:,:,0].shape, dtype = image.dtype)
