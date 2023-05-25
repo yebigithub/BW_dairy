@@ -1,4 +1,19 @@
 # Depth video data-enabled predictions of longitudinal dairy cow body weight using thresholding and Mask R-CNN algorithms
+This reporsitory includes:
+* 1. Thresholding methods
+* 1.1 Single threshold method.
+* 1.2 Adpative threshold method.
+* 2. Mask RCNN method
+* 2.1 LabelMe.
+* 2.2 Mask-RCNN method
+* 2.2.1 Training Mask-RCNN model
+* 2.2.2 Predict depth images by trained Mask-RCNN model.
+* 3. Build Body Weight Regression Model
+* 3.1 Data Preprocessing
+* 3.2 Goodness of fit
+* 3.3 Cross-Validation 1
+* 3.4 Cross-Validation 2
+
 ## 1. Thresholding methods
 ### 1.1 Single threshold method.
 - [.py file](https://github.com/yebigithub/BW_github_beta/blob/main/python/single_thr/ImageAnalysis_single_thr.py)
