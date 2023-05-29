@@ -48,7 +48,7 @@ labelme_json_to_dataset ./outputs/cow.json -o ./outputs/cow_json
 #### 2.2.1 Training Mask-RCNN model
 - [.ipynb file](https://github.com/yebigithub/BW_dairy/blob/main/python/mrcnn/MaskRCNN_Train/YB_train_cow_TF2_8.ipynb) 
 - [.h5 file]()
-![alt text](https://github.com/yebigithub/BW_dairy/blob/main/python/mrcnn/LabelMe/mrcnn.gif)
+![alt text](https://github.com/yebigithub/BW_dairy/blob/main/python/mrcnn/mrcnn.gif)
 
 #### 2.2.2 Predict depth images by trained Mask-RCNN model.
 - [.py file](https://github.com/yebigithub/BW_dairy/blob/main/python/mrcnn/ImageAnalysis_mrcnn.py)
