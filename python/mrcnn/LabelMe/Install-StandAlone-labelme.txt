@@ -1,3 +1,5 @@
+# Created by Haipeng Yu <haipengyu@ufl.edu>
+
 #############################################################
 ### Steps to install standalone executable labelme on Mac ###
 #############################################################
