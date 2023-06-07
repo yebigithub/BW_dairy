@@ -1,4 +1,4 @@
-# Created by Haipeng Yu <haipengyu@ufl.edu>
+The code was forked from https://github.com/uf-aiaos/ShinyAnimalCV
 
 #############################################################
 ### Steps to install standalone executable labelme on Mac ###
