@@ -77,9 +77,7 @@ def neck_removal(fill_img, neck_threshold):
     
     if deleted_cols.shape[0] != 0:
         print(f"Neck will be removed with ratio {neck_threshold} \n")
-        fill_img_crop = fill_img[:,0:deleted_cols[0]] # delete the neck cols
-        black_cols = np.zeros_like(fill_img[:, deleted_cols[0]+1:])
-        fill_img = np.concatenate((fill_img_crop, black_cols), axis = 1)
+        fill_img[:, deleted_cols[0]+1:] = np.zeros_like(fill_img[:, deleted_cols[0]+1:])
     else: 
       print("Neck will be kept \n")
       fill_img = fill_img
