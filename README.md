@@ -30,7 +30,7 @@ This repository includes:
 
 ## 2. Mask RCNN method
 ### 2.1 LabelMe.
-- The code was forked from https://github.com/wkentaro/labelme and its revision https://github.com/uf-aiaos/ShinyAnimalCV
+- The code was forked from https://github.com/uf-aiaos/ShinyAnimalCV
 - [How to install LabelMe](https://github.com/yebigithub/BW_dairy/blob/main/python/mrcnn/LabelMe/Install-StandAlone-labelme.txt)
 - How to use LabelMe to label image
 
@@ -47,7 +47,7 @@ labelme_json_to_dataset ./outputs/cow.json -o ./outputs/cow_json
 ```
 ### 2.2 Mask-RCNN method
 #### 2.2.1 Training Mask-RCNN model
-- The code was forked from https://github.com/matterport/Mask_RCNN and its revision https://github.com/uf-aiaos/ShinyAnimalCV
+- The code was forked from https://github.com/uf-aiaos/ShinyAnimalCV
 - [.ipynb file](https://github.com/yebigithub/BW_dairy/blob/main/python/mrcnn/MaskRCNN_Train/YB_train_cow_TF2_8.ipynb) 
 - [.h5 file]()
 
