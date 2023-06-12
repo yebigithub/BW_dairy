@@ -1,4 +1,4 @@
-The code was forked from https://github.com/wkentaro/labelme and revised following https://github.com/uf-aiaos/ShinyAnimalCV
+The code was forked from https://github.com/wkentaro/labelmeand and its revision https://github.com/uf-aiaos/ShinyAnimalCV
 
 #############################################################
 ### Steps to install standalone executable labelme on Mac ###
