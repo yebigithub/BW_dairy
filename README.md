@@ -4,6 +4,7 @@
 
 
 This repository includes:
+0. Quick sample code.
 1. Thresholding methods
     * 1.1 Single threshold method.
     * 1.2 Adpative threshold method.
@@ -17,6 +18,10 @@ This repository includes:
     * 3.2 Goodness of fit
     * 3.3 Cross-Validation 1
     * 3.4 Cross-Validation 2
+
+## 0. Quick sample code.
+
+
 
 ## 1. Thresholding methods
 ### 1.1 Single threshold method.
