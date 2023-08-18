@@ -46,7 +46,7 @@ python adaptive_thr/ImageAnalysis_adaptive_thr.py D1
 ```
 python maskrcnn/ImageAnalysis_mrcnn.py D1
 ```
-- After running, each approach will generate one csv file in ```outputs/D1```folder as following.
+***Step3. Check your outputs. After running, each approach will generate one csv file in ```outputs/D1```folder as following.***
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/outputs_csv.png' width='70%' height='70%'>
 
 ## 2. Thresholding methods
