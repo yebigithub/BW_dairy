@@ -26,6 +26,9 @@ This repository includes:
 # $ conda create --name <env> --file <requirement.txt>
 ```
 - Run image analysis samples. Each approach will generate one csv file as following.
+<img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/outputs_csv.png' width='70%' height='70%'>
+
+
 
 
 
