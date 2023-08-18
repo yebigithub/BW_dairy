@@ -33,6 +33,7 @@ This repository includes:
 <p align="center">
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/sample_file_structure.png' width='30%' height='30%'>
 </p>
+
 - Please make sure the ```outputs``` folder is empty before running each image analysis method. 
 
 #### Step2. Choose one image analysis method. 
