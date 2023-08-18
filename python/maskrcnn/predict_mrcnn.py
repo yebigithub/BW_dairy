@@ -54,7 +54,9 @@ class InferenceConfig(ShapesConfig):
 #################################################################
 
 def predict_mrcnn(image):
-    ROOT_DIR = os.path.abspath("/Users/yebi/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/BW_diary/python/mrcnn/MaskRCNN_Train/Mask_RCNN")
+    ROOT_DIR = os.path.abspath("./maskrcnn/MaskRCNN_Train/Mask_RCNN")
+
+    # ROOT_DIR = os.path.abspath("/Users/yebi/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/BW_diary/python/mrcnn/MaskRCNN_Train/Mask_RCNN")
     MODEL_DIR = os.path.join(ROOT_DIR, "logs")
     sys.path.append(ROOT_DIR)  # To find local version of the library
   
