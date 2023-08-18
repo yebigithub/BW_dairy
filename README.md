@@ -27,22 +27,23 @@ This repository includes:
 # $ conda create --name <env> --file <requirement.txt>
 ```
 ### 1.2 Run image analysis.
-- After running, each approach will generate one csv file as following.
+***Step1. Build one empty folder named "outputs" within your local folder "python"***
+Make sure the outputs folder is empty before running each image analysis method.
+***Step2. Select one image analysis method below and run the related code block***
+    - Single threshold method:
+    ```
+    python single_thr/ImageAnalysis_single_thr.py D1
+    ```
+    - Adaptive threshold method:
+    ```
+    python adaptive_thr/ImageAnalysis_adaptive_thr.py D1
+    ```
+    - Mask R-CNN method:
+    ```
+    python maskrcnn/ImageAnalysis_mrcnn.py D1
+    ```
+- After running, each approach will generate one csv file in ```outputs - D1```as following.
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/outputs_csv.png' width='70%' height='70%'>
-
-- Single threshold method:
-```
-python single_thr/ImageAnalysis_single_thr.py D1
-```
-- Adaptive threshold method:
-```
-python adaptive_thr/ImageAnalysis_adaptive_thr.py D1
-```
-- Mask R-CNN method:
-```
-python maskrcnn/ImageAnalysis_mrcnn.py D1
-```
-
 
 ## 2. Thresholding methods
 ### 2.1 Single threshold method.
