@@ -70,8 +70,11 @@ After running, each approach will generate one csv file in ```outputs/D1```folde
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/Figure1.png?raw=true' width='70%' height='70%'>
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/Figure2.png?raw=true' width='70%' height='70%'>
 
-![alt text](https://github.com/yebigithub/BW_dairy/blob/main/picts/volume.gif)
+<p align="center">
+  <img src="https://github.com/yebigithub/BW_dairy/blob/main/picts/volume.gif" alt="animated" />
 </p>
+
+![alt text](https://github.com/yebigithub/BW_dairy/blob/main/picts/volume.gif)
 
 ## 3. Mask RCNN method
 ### 3.1 LabelMe.
