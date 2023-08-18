@@ -27,10 +27,10 @@ This repository includes:
 # $ conda create --name <env> --file <requirement.txt>
 ```
 ### 1.2 Run image analysis.  
-***Step1. Build one empty folder named "outputs" within your local folder "python"***  
+***Step1.*** Build one empty folder named "outputs" within your local folder "python" 
 Make sure the outputs folder is empty before running each image analysis method. 
 
-***Step2. Select one image analysis method below and run the related code block***  
+***Step2.*** Select one image analysis method below and run the related code block
 
 - Single threshold method:
 ```
@@ -46,8 +46,8 @@ python adaptive_thr/ImageAnalysis_adaptive_thr.py D1
 ```
 python maskrcnn/ImageAnalysis_mrcnn.py D1
 ```
-***Step3. Check your outputs. After running, each approach will generate one csv file in ```outputs/D1```folder as following.***
-
+***Step3.*** Check your outputs. 
+After running, each approach will generate one csv file in ```outputs/D1```folder as following.   
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/outputs_csv.png' width='70%' height='70%'>
 
 ## 2. Thresholding methods
