@@ -84,7 +84,7 @@ After running, each approach will generate one csv file in ```outputs/D1```folde
 ## Code used to start label png into json files.
 labelme ./depth/cow.png -O ./outputs/cow.json
 ```
-<p align="center">
+
 ![alt text](https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/LabelMe/HowToLabelMe1.gif)
 
 ```
@@ -97,11 +97,11 @@ labelme_json_to_dataset ./outputs/cow.json -o ./outputs/cow_json
 - [.ipynb file](https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/MaskRCNN_Train/YB_train_cow_TF2_8.ipynb) 
 - [.h5 file]()
 
-<p align="center">
 ![alt text](https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/mrcnn.gif)
 
 #### 3.2.2 Predict depth images by trained Mask-RCNN model.
 - [.py file](https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/ImageAnalysis_mrcnn.py)
+
 <p align="center">
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/MRCNN.png?raw=true' width='70%' height='70%'>
 
@@ -117,3 +117,4 @@ labelme_json_to_dataset ./outputs/cow.json -o ./outputs/cow_json
 
 <p align="center">
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/CV_design.png?raw=true' width='70%' height='70%'>
+</p>
