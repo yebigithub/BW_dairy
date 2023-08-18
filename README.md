@@ -99,7 +99,9 @@ labelme_json_to_dataset ./outputs/cow.json -o ./outputs/cow_json
 - [.ipynb file](https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/MaskRCNN_Train/YB_train_cow_TF2_8.ipynb) 
 - [.h5 file]()
 
-![alt text](https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/mrcnn.gif)
+<p align="center">
+<img src='https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/mrcnn.gif' width='70%' height='70%'>
+</p>
 
 #### 3.2.2 Predict depth images by trained Mask-RCNN model.
 - [.py file](https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/ImageAnalysis_mrcnn.py)
