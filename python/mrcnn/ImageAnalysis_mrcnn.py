@@ -11,17 +11,19 @@ import pandas as pd
 import predict_mrcnn
 import skimage.io as io
 
-#setting current working directory---related where to save outputs.
-os.chdir('/Users/yebi/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight')
+# os.chdir('/Users/yebi/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight') 
+os.chdir('./')
 parser = argparse.ArgumentParser(description = 'Extracting image descriptors from image')
 parser.add_argument('day', help = 'day info.')
 args = parser.parse_args()
 
 #setting depth images and CSV files location.
-rootdir = "/Volumes/MyPassport1"
-dep_folder = "/Volumes/MyPassport1/" + args.day + "/depth/"
-csv_folder = "/Volumes/MyPassport1/" + args.day + "/CSV/"
-day_folder = "/Users/yebi/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/outputs/" + args.day + "/" + args.day + "_"
+# rootdir = "/Volumes/MyPassport1"
+rootdir = "./"
+dep_folder = rootdir + args.day + "/depth/"
+csv_folder = rootdir + args.day + "/CSV/"
+day_folder = "./outputs/" + args.day + "/" + args.day + "_"
+# img_out = "./outputs/imgs/D1/" #to check if image analysis works well.
 
 if not os.path.exists('./outputs/' + args.day):
   os.mkdir("./outputs/" + args.day)
