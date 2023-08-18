@@ -74,8 +74,6 @@ After running, each approach will generate one csv file in ```outputs/D1```folde
   <img src="https://github.com/yebigithub/BW_dairy/blob/main/picts/volume.gif" alt="animated" />
 </p>
 
-![alt text](https://github.com/yebigithub/BW_dairy/blob/main/picts/volume.gif)
-
 ## 3. Mask RCNN method
 ### 3.1 LabelMe.
 - The code was forked from https://github.com/uf-aiaos/ShinyAnimalCV
@@ -87,8 +85,9 @@ After running, each approach will generate one csv file in ```outputs/D1```folde
 ## Code used to start label png into json files.
 labelme ./depth/cow.png -O ./outputs/cow.json
 ```
-
-![alt text](https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/LabelMe/HowToLabelMe1.gif)
+<p align="center">
+  <img src="https://github.com/yebigithub/BW_dairy/blob/main/python/maskrcnn/LabelMe/HowToLabelMe1.gif" alt="animated" />
+</p>
 
 ```
 # Code used to transfer json files into folders.
@@ -107,6 +106,7 @@ labelme_json_to_dataset ./outputs/cow.json -o ./outputs/cow_json
 
 <p align="center">
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/MRCNN.png?raw=true' width='70%' height='70%'>
+</p>
 
 ## 4. Build Body Weight Regression Model
 ### 4.1 Data Preprocessing
