@@ -20,7 +20,12 @@ This repository includes:
     * 4.4 Cross-Validation 2
 
 ## 1. Quick sample code.
-
+- Download [python folder](https://github.com/yebigithub/BW_dairy/tree/main/python) from this github into your local postion.
+- install the [requirement.txt]()
+```
+# $ conda create --name <env> --file <requirement.txt>
+```
+- 
 
 
 ## 2. Thresholding methods
