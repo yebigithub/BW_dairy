@@ -29,6 +29,7 @@ This repository includes:
 ### 1.2 Run image analysis.
 - After running, each approach will generate one csv file as following.
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/outputs_csv.png' width='70%' height='70%'>
+
 - Single threshold method:
 ```
 python single_thr/ImageAnalysis_single_thr.py D1
