@@ -29,8 +29,8 @@ This repository includes:
 ### 1.2 Run image analysis.  
 #### Step1. Create outputs directory.
 - Build one empty folder named ```outputs``` within your local folder ```python``` which you downloaded from this github repository.
-- If you want to run for your own figures, please make sure your files following our ```[Sample_files](https://github.com/yebigithub/BW_dairy/tree/main/python/Sample_files)``` folder structure.
-
+- If you want to run for your own figures, please make sure your files following our [```Sample_files```](https://github.com/yebigithub/BW_dairy/tree/main/python/Sample_files) folder structure.
+<img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/sample_file_structure.png' width='70%' height='70%'>
 - Please make sure the ```outputs``` folder is empty before running each image analysis method. 
 
 #### Step2. Choose one image analysis method. 
