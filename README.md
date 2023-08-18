@@ -20,16 +20,27 @@ This repository includes:
     * 4.4 Cross-Validation 2
 
 ## 1. Quick sample code.
+### 1.1 Establish your environment. 
 - Download [python folder](https://github.com/yebigithub/BW_dairy/tree/main/python) from this github into your local postion.
 - Install all the packages you will use in [requirement.txt](https://github.com/yebigithub/BW_dairy/blob/main/python/requirements.txt). Recreate one [conda environment](https://conda.io/projects/conda/en/latest/index.html) follow the lines.
 ```
 # $ conda create --name <env> --file <requirement.txt>
 ```
-- Run image analysis samples. Each approach will generate one csv file as following.
+### 1.2 Run image analysis.
+- After running, each approach will generate one csv file as following.
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/outputs_csv.png' width='70%' height='70%'>
-
-
-
+- Single threshold method:
+```
+python single_thr/ImageAnalysis_single_thr.py D1
+```
+- Adaptive threshold method:
+```
+python adaptive_thr/ImageAnalysis_adaptive_thr.py D1
+```
+- Mask R-CNN method:
+```
+python maskrcnn/ImageAnalysis_mrcnn.py D1
+```
 
 
 ## 2. Thresholding methods
