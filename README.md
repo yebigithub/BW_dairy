@@ -3,7 +3,7 @@
 **Preprint on arXiv: https://arxiv.org/abs/2307.01383**  
 
 
-This repository includes:
+This repository includes:  
 0. Quick sample code.
 1. Thresholding methods
     * 1.1 Single threshold method.
