@@ -42,7 +42,7 @@ Make sure the outputs folder is empty before running each image analysis method.
     ```
     python maskrcnn/ImageAnalysis_mrcnn.py D1
     ```
-- After running, each approach will generate one csv file in ```outputs - D1```as following.
+- After running, each approach will generate one csv file in ```outputs/D1```folder as following.
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/outputs_csv.png' width='70%' height='70%'>
 
 ## 2. Thresholding methods
