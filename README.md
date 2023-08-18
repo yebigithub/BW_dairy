@@ -35,12 +35,10 @@ This repository includes:
 ```
 python single_thr/ImageAnalysis_single_thr.py D1
 ```
-
 - Adaptive threshold method:
 ```
 python adaptive_thr/ImageAnalysis_adaptive_thr.py D1
 ```
-
 - Mask R-CNN method:
 ```
 python maskrcnn/ImageAnalysis_mrcnn.py D1
