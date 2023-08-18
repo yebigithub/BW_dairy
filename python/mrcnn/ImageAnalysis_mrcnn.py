@@ -19,7 +19,7 @@ args = parser.parse_args()
 
 #setting depth images and CSV files location.
 # rootdir = "/Volumes/MyPassport1"
-rootdir = "./"
+rootdir = "./Sample_files/Depth/"
 dep_folder = rootdir + args.day + "/depth/"
 csv_folder = rootdir + args.day + "/CSV/"
 day_folder = "./outputs/" + args.day + "/" + args.day + "_"
@@ -102,7 +102,7 @@ i = 1
 for cowid in os.listdir(dep_folder):
   summ = os.path.join(day_folder+cowid+".csv")
   if os.path.isfile(summ):
-    print("already there, go to next one")
+    print("already there, please move these files to another folder.")
     continue
   else:
     depthdir = dep_folder + cowid + "/"

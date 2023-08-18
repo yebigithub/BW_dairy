@@ -7,7 +7,7 @@ This repository includes:
 0. Quick sample code.
 1. Thresholding methods
     * 1.1 Single threshold method.
-    * 1.2 Adpative threshold method.
+    * 1.2 Adaptive threshold method.
 2. Mask RCNN method
     * 2.1 LabelMe.
     * 2.2 Mask-RCNN method
@@ -27,8 +27,8 @@ This repository includes:
 ### 1.1 Single threshold method.
 - [.py file](https://github.com/yebigithub/BW_dairy/blob/main/python/single_thr/ImageAnalysis_single_thr.py)
 
-### 1.2 Adpative threshold method.
-- [.py file](https://github.com/yebigithub/BW_dairy/blob/main/python/adpative_thr/ImageAnalysis_adpative_thr.py)
+### 1.2 Adaptive threshold method.
+- [.py file](https://github.com/yebigithub/BW_dairy/blob/main/python/adaptive_thr/ImageAnalysis_adaptive_thr.py)
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/Thresholding.png' width='70%' height='70%'>
 
 #### Main steps
