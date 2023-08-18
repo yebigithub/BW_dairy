@@ -27,6 +27,7 @@ imgaug=0.4.0=pypi_0
 importlib-metadata=6.6.0=pyha770c72_0
 importlib-resources=5.12.0=pypi_0
 importlib_metadata=6.6.0=hd8ed1ab_0
+imutils=0.5.4=pypi_0
 ipykernel=6.23.1=pyh736e0ef_0
 ipython=8.13.2=pyhd1c38e8_0
 jax=0.4.10=pypi_0

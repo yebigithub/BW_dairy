@@ -21,11 +21,12 @@ This repository includes:
 
 ## 1. Quick sample code.
 - Download [python folder](https://github.com/yebigithub/BW_dairy/tree/main/python) from this github into your local postion.
-- install the [requirement.txt]()
+- Install all the packages you will use in [requirement.txt](https://github.com/yebigithub/BW_dairy/blob/main/python/requirements.txt). Recreate one [conda environment](https://conda.io/projects/conda/en/latest/index.html) follow the lines.
 ```
 # $ conda create --name <env> --file <requirement.txt>
 ```
-- 
+- Run image analysis samples. Each approach will generate one csv file as following.
+
 
 
 ## 2. Thresholding methods
