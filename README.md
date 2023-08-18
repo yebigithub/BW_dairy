@@ -32,20 +32,20 @@ This repository includes:
 
 ***Step2. Select one image analysis method below and run the related code block***  
 
-    - Single threshold method:
-    ```
-    python single_thr/ImageAnalysis_single_thr.py D1
-    ```
+- Single threshold method:
+```
+python single_thr/ImageAnalysis_single_thr.py D1
+```
 
-    - Adaptive threshold method:
-    ```
-    python adaptive_thr/ImageAnalysis_adaptive_thr.py D1
-    ```
+- Adaptive threshold method:
+```
+python adaptive_thr/ImageAnalysis_adaptive_thr.py D1
+```
 
-    - Mask R-CNN method:
-    ```
-    python maskrcnn/ImageAnalysis_mrcnn.py D1
-    ```
+- Mask R-CNN method:
+```
+python maskrcnn/ImageAnalysis_mrcnn.py D1
+```
 - After running, each approach will generate one csv file in ```outputs/D1```folder as following.
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/outputs_csv.png' width='70%' height='70%'>
 
