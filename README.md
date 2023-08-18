@@ -28,8 +28,7 @@ This repository includes:
 ```
 ### 1.2 Run image analysis.  
 #### Step1. Create outputs directory.
-Build one empty folder named ```outputs``` within your local folder ```python``` which you downloaded from this github repository.  
-Make sure the ```outputs``` folder is empty before running each image analysis method. 
+Build one empty folder named ```outputs``` within your local folder ```python``` which you downloaded from this github repository. Please make sure the ```outputs``` folder is empty before running each image analysis method. 
 
 #### Step2. Choose one image analysis method. 
 Select one image analysis method below and run the related code block
