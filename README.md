@@ -62,6 +62,7 @@ After running, each approach will generate one csv file in ```outputs/D1```folde
 
 ### 2.2 Adaptive threshold method.
 - [.py file](https://github.com/yebigithub/BW_dairy/blob/main/python/adaptive_thr/ImageAnalysis_adaptive_thr.py)
+<p align="center">
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/Thresholding.png' width='70%' height='70%'>
 
 #### Main steps
@@ -69,6 +70,7 @@ After running, each approach will generate one csv file in ```outputs/D1```folde
 <img src='https://github.com/yebigithub/BW_dairy/blob/main/picts/Figure2.png?raw=true' width='70%' height='70%'>
 
 ![alt text](https://github.com/yebigithub/BW_dairy/blob/main/picts/volume.gif)
+</p>
 
 ## 3. Mask RCNN method
 ### 3.1 LabelMe.
