@@ -8,6 +8,8 @@ from scipy.spatial import distance as dist
 import numpy as np
 import cv2
 import pandas as pd
+
+sys.path.append("./maskrcnn")
 import predict_mrcnn
 import skimage.io as io
 

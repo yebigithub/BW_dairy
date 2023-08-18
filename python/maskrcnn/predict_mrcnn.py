@@ -5,7 +5,6 @@ import sklearn as sk
 import tensorflow as tf
 import platform
 import os
-import sys
 import random
 import math
 import re
@@ -18,6 +17,8 @@ import yaml
 from PIL import Image
 import imgaug  # https://github.com/aleju/imgaug (pip3 install imgaug)
 import skimage.io as io
+
+sys.path.append("./maskrcnn/MaskRCNN_Train")
 from mrcnn.config import Config
 from mrcnn import utils
 import mrcnn.model as modellib
@@ -53,7 +54,7 @@ class InferenceConfig(ShapesConfig):
 #################################################################
 
 def predict_mrcnn(image):
-    ROOT_DIR = os.path.abspath("/Users/yebi/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/BW_github_beta/python/mrcnn/MaskRCNN_Train/Mask_RCNN")
+    ROOT_DIR = os.path.abspath("/Users/yebi/Library/CloudStorage/OneDrive-VirginiaTech/Research/Codes/research/BCS/BodyWeight/BW_diary/python/mrcnn/MaskRCNN_Train/Mask_RCNN")
     MODEL_DIR = os.path.join(ROOT_DIR, "logs")
     sys.path.append(ROOT_DIR)  # To find local version of the library
   
