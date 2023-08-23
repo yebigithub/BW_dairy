@@ -20,6 +20,7 @@ This repository includes:
     * 4.4 Cross-Validation 2
 
 ## 1. Quick sample code.
+Attention: This sample code works with example images. For your customized images, many hyperparameters need to be adjusted. 
 ### 1.1 Establish your environment. 
 - Download [python folder](https://github.com/yebigithub/BW_dairy/tree/main/python) from this github into your local postion.
 - Install all the packages you will use in [requirement.txt](https://github.com/yebigithub/BW_dairy/blob/main/python/requirements.txt). Recreate one [conda environment](https://conda.io/projects/conda/en/latest/index.html) follow the lines.
