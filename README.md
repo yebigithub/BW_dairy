@@ -1,6 +1,6 @@
 # Depth video data-enabled predictions of longitudinal dairy cow body weight using thresholding and Mask R-CNN algorithms
 
-** This repo contains all the code used in [Bi, Ye, et al](https://doi.org/10.1016/j.atech.2023.100352).
+**This repo contains all the code used in [Bi et al.(2023)](https://doi.org/10.1016/j.atech.2023.100352).**
 
 
 This repository includes:  
